@@ -1,0 +1,173 @@
+---
+title: "Data preperation"
+output: html_document
+date: '2022-06-11'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, warning=FALSE, message=FALSE}
+
+pacman::p_load(tidyverse, here)
+
+
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+Data <- read_csv(here('Data\\Raw\\unitedRawData.csv'))
+
+
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+replaceMETI <- function(data, Condition, Reverse){
+  
+  if((Condition == 'brownKnow' & Reverse == FALSE) | (Condition == 'blueKnow' & Reverse == TRUE)){
+  
+  data <- if_else(data == 'Analyst Blue', 7,
+                  if_else(data == ')))', 6,
+                          if_else(data == '))', 5,
+                                  if_else(data == '()', 4,
+                                          if_else(data == '(((', 3,
+                                                  if_else(data == '((', 2,
+                                                          if_else(data == 'Analyst Brown', 1, NA_real_,)))))))
+  
+}else if((Condition == 'brownKnow' & Reverse == TRUE) | (Condition == 'blueKnow' & Reverse == FALSE)){
+  
+  data <- if_else(data == 'Analyst Blue', 1,
+                  if_else(data == ')))', 2,
+                          if_else(data == '))', 3,
+                                  if_else(data == '()', 4,
+                                          if_else(data == '(((', 5,
+                                                  if_else(data == '((', 6,
+                                                          if_else(data == 'Analyst Brown', 7, NA_real_,)))))))
+  
+ 
+
+}
+   return(data)
+}
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+Data <- Data %>% 
+  mutate(DV = if_else(is.na(DV_BlackUp) == FALSE, DV_BlackUp, DV_BlueUp))
+```
+
+```{r, warning=FALSE, message=FALSE}
+brownKnow <- Data %>% 
+  filter(Condition == 'brownKnow')
+
+
+brownKnow <- brownKnow %>% 
+mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'brownKnow', Reverse = FALSE),
+       METI_1_4 = replaceMETI(METI_1_4, Condition = 'brownKnow', Reverse = FALSE),
+       METI_1_7 = replaceMETI(METI_1_7, Condition = 'brownKnow', Reverse = FALSE),
+       METI_1_8 = replaceMETI(METI_1_8, Condition = 'brownKnow', Reverse = FALSE),
+       METI_2_1 = replaceMETI(METI_2_1, Condition = 'brownKnow', Reverse = FALSE),
+       METI_2_2 = replaceMETI(METI_2_2, Condition = 'brownKnow', Reverse = FALSE),
+       METI_2_4 = replaceMETI(METI_2_4, Condition = 'brownKnow', Reverse = FALSE),
+       METI_2_6 = replaceMETI(METI_2_6, Condition = 'brownKnow', Reverse = FALSE),
+       METI_2_7 = replaceMETI(METI_2_7, Condition = 'brownKnow', Reverse = FALSE),
+       
+       
+       METI_1_1 = replaceMETI(METI_1_1, Condition = 'brownKnow', Reverse = TRUE),
+       METI_1_3 = replaceMETI(METI_1_3, Condition = 'brownKnow', Reverse = TRUE),
+       METI_1_5 = replaceMETI(METI_1_5, Condition = 'brownKnow', Reverse = TRUE),
+       METI_1_6 = replaceMETI(METI_1_6, Condition = 'brownKnow', Reverse = TRUE),
+       METI_2_3 = replaceMETI(METI_2_3, Condition = 'brownKnow', Reverse = TRUE),
+       METI_2_5 = replaceMETI(METI_2_5, Condition = 'brownKnow', Reverse = TRUE),
+       METI_2_8 = replaceMETI(METI_2_8, Condition = 'brownKnow', Reverse = TRUE)) %>% 
+  mutate(faceDecision = if_else(faceDecisionBlue == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice'))
+
+
+
+blueKnow <- Data %>% 
+  filter(Condition == 'blueKnow')
+
+
+blueKnow <- blueKnow %>% 
+mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'blueKnow', Reverse = TRUE),
+       METI_1_4 = replaceMETI(METI_1_4, Condition = 'blueKnow', Reverse = TRUE),
+       METI_1_7 = replaceMETI(METI_1_7, Condition = 'blueKnow', Reverse = TRUE),
+       METI_1_8 = replaceMETI(METI_1_8, Condition = 'blueKnow', Reverse = TRUE),
+       METI_2_1 = replaceMETI(METI_2_1, Condition = 'blueKnow', Reverse = TRUE),
+       METI_2_2 = replaceMETI(METI_2_2, Condition = 'blueKnow', Reverse = TRUE),
+       METI_2_4 = replaceMETI(METI_2_4, Condition = 'blueKnow', Reverse = TRUE),
+       METI_2_6 = replaceMETI(METI_2_6, Condition = 'blueKnow', Reverse = TRUE),
+       METI_2_7 = replaceMETI(METI_2_7, Condition = 'blueKnow', Reverse = TRUE),
+       
+       
+       METI_1_1 = replaceMETI(METI_1_1, Condition = 'blueKnow', Reverse = FALSE),
+       METI_1_3 = replaceMETI(METI_1_3, Condition = 'blueKnow', Reverse = FALSE),
+       METI_1_5 = replaceMETI(METI_1_5, Condition = 'blueKnow', Reverse = FALSE),
+       METI_1_6 = replaceMETI(METI_1_6, Condition = 'blueKnow', Reverse = FALSE),
+       METI_2_3 = replaceMETI(METI_2_3, Condition = 'blueKnow', Reverse = FALSE),
+       METI_2_5 = replaceMETI(METI_2_5, Condition = 'blueKnow', Reverse = FALSE),
+       METI_2_8 = replaceMETI(METI_2_8, Condition = 'blueKnow', Reverse = FALSE)) %>% 
+  mutate(faceDecision = if_else(faceDecisionBrown == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice'))
+
+Data <- rbind(brownKnow, blueKnow)
+```
+
+
+```{r, warning=FALSE, message=FALSE}
+intelectualUmility <- function(data, Reverse = FALSE){
+  
+    if(Reverse == TRUE){
+  
+  data <- if_else(data == 'Strongly', 7,
+                  if_else(data == 'Disagree', 6,
+                          if_else(data == 'Slightly disagree', 5,
+                                  if_else(data == 'Neither agree nor disagree', 4,
+                                          if_else(data == 'Slightly agree', 3,
+                                                  if_else(data == 'Agree', 2,
+                                                          if_else(data == 'Strongly agree', 1, NA_real_)))))))
+  
+}else{
+  
+ data <- if_else(data == 'Strongly', 1,
+                  if_else(data == 'Disagree', 2,
+                          if_else(data == 'Slightly disagree', 3,
+                                  if_else(data == 'Neither agree nor disagree', 4,
+                                          if_else(data == 'Slightly agree', 5,
+                                                  if_else(data == 'Agree', 6,
+                                                          if_else(data == 'Strongly agree', 7, NA_real_)))))))
+  
+ 
+
+}
+   return(data)
+  
+}
+
+Data <- Data %>% 
+  mutate(IH_1 = intelectualUmility(IH_1, Reverse = TRUE),
+         IH_2 = intelectualUmility(IH_2),
+         IH_3 = intelectualUmility(IH_3),
+         IH_4 = intelectualUmility(IH_4),
+         IH_5 = intelectualUmility(IH_5, Reverse = TRUE),
+         IH_6 = intelectualUmility(IH_6, Reverse = TRUE))
+
+```
+
+
+
+```{r, warning=FALSE, message=FALSE}
+Data <- Data %>% 
+  filter(Consecutively == 'Yes') %>% 
+  filter(Disturbances == 'No') %>% 
+  filter(Alone == 'Alone') %>% 
+  filter(Honesty == 'Yes, I put in a reasonable effort') %>% 
+  filter((whoNotKnow == 'Analyst Brown' & Condition == 'blueKnow') | (whoNotKnow == 'Analyst Blue' & Condition == 'brownKnow'))
+```
+
+```{r, warning=FALSE, message=FALSE}
+write.csv(Data, 'dataForAnalysis.csv')
+
+```
