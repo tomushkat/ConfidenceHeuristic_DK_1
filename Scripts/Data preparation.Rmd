@@ -83,7 +83,8 @@ mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'brownKnow', Reverse = FALSE
        METI_2_3 = replaceMETI(METI_2_3, Condition = 'brownKnow', Reverse = TRUE),
        METI_2_5 = replaceMETI(METI_2_5, Condition = 'brownKnow', Reverse = TRUE),
        METI_2_8 = replaceMETI(METI_2_8, Condition = 'brownKnow', Reverse = TRUE)) %>% 
-  mutate(faceDecision = if_else(faceDecisionBlue == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice'))
+  mutate(faceDecision = if_else(faceDecisionBlue == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice')) %>% 
+  mutate(DV = if_else(DV == 'Analyst Brown', 'prefereKnow', 'prefereDK'))
 
 
 
@@ -110,7 +111,9 @@ mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'blueKnow', Reverse = TRUE),
        METI_2_3 = replaceMETI(METI_2_3, Condition = 'blueKnow', Reverse = FALSE),
        METI_2_5 = replaceMETI(METI_2_5, Condition = 'blueKnow', Reverse = FALSE),
        METI_2_8 = replaceMETI(METI_2_8, Condition = 'blueKnow', Reverse = FALSE)) %>% 
-  mutate(faceDecision = if_else(faceDecisionBrown == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice'))
+  mutate(faceDecision = if_else(faceDecisionBrown == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice')) %>% 
+  mutate(DV = if_else(DV == 'Analyst Blue', 'prefereKnow', 'prefereDK'))
+
 
 Data <- rbind(brownKnow, blueKnow)
 ```
