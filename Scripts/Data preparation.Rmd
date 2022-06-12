@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r, warning=FALSE, message=FALSE}
 
-pacman::p_load(tidyverse, here)
+pacman::p_load(tidyverse, here, psych, gmodels)
 
 
 ```
@@ -24,9 +24,9 @@ Data <- read_csv(here('Data\\Raw\\unitedRawData.csv'))
 
 
 ```{r, warning=FALSE, message=FALSE}
-replaceMETI <- function(data, Condition, Reverse){
+replaceMETI <- function(data, Condition, goodChar){
   
-  if((Condition == 'brownKnow' & Reverse == FALSE) | (Condition == 'blueKnow' & Reverse == TRUE)){
+  if((Condition == 'brownKnow' & goodChar == TRUE) | (Condition == 'blueKnow' & goodChar == FALSE)){
   
   data <- if_else(data == 'Analyst Blue', 7,
                   if_else(data == ')))', 6,
@@ -36,7 +36,7 @@ replaceMETI <- function(data, Condition, Reverse){
                                                   if_else(data == '((', 2,
                                                           if_else(data == 'Analyst Brown', 1, NA_real_,)))))))
   
-}else if((Condition == 'brownKnow' & Reverse == TRUE) | (Condition == 'blueKnow' & Reverse == FALSE)){
+}else if((Condition == 'brownKnow' & goodChar == FALSE) | (Condition == 'blueKnow' & goodChar == TRUE)){
   
   data <- if_else(data == 'Analyst Blue', 1,
                   if_else(data == ')))', 2,
@@ -65,26 +65,28 @@ brownKnow <- Data %>%
 
 
 brownKnow <- brownKnow %>% 
-mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'brownKnow', Reverse = FALSE),
-       METI_1_4 = replaceMETI(METI_1_4, Condition = 'brownKnow', Reverse = FALSE),
-       METI_1_7 = replaceMETI(METI_1_7, Condition = 'brownKnow', Reverse = FALSE),
-       METI_1_8 = replaceMETI(METI_1_8, Condition = 'brownKnow', Reverse = FALSE),
-       METI_2_1 = replaceMETI(METI_2_1, Condition = 'brownKnow', Reverse = FALSE),
-       METI_2_2 = replaceMETI(METI_2_2, Condition = 'brownKnow', Reverse = FALSE),
-       METI_2_4 = replaceMETI(METI_2_4, Condition = 'brownKnow', Reverse = FALSE),
-       METI_2_6 = replaceMETI(METI_2_6, Condition = 'brownKnow', Reverse = FALSE),
-       METI_2_7 = replaceMETI(METI_2_7, Condition = 'brownKnow', Reverse = FALSE),
+mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'brownKnow', goodChar = TRUE),
+       METI_1_4 = replaceMETI(METI_1_4, Condition = 'brownKnow', goodChar = TRUE),
+       METI_1_7 = replaceMETI(METI_1_7, Condition = 'brownKnow', goodChar = TRUE),
+       METI_1_8 = replaceMETI(METI_1_8, Condition = 'brownKnow', goodChar = TRUE),
+       METI_2_1 = replaceMETI(METI_2_1, Condition = 'brownKnow', goodChar = TRUE),
+       METI_2_2 = replaceMETI(METI_2_2, Condition = 'brownKnow', goodChar = TRUE),
+       METI_2_4 = replaceMETI(METI_2_4, Condition = 'brownKnow', goodChar = TRUE),
+       METI_2_6 = replaceMETI(METI_2_6, Condition = 'brownKnow', goodChar = TRUE),
+       METI_2_7 = replaceMETI(METI_2_7, Condition = 'brownKnow', goodChar = TRUE),
        
        
-       METI_1_1 = replaceMETI(METI_1_1, Condition = 'brownKnow', Reverse = TRUE),
-       METI_1_3 = replaceMETI(METI_1_3, Condition = 'brownKnow', Reverse = TRUE),
-       METI_1_5 = replaceMETI(METI_1_5, Condition = 'brownKnow', Reverse = TRUE),
-       METI_1_6 = replaceMETI(METI_1_6, Condition = 'brownKnow', Reverse = TRUE),
-       METI_2_3 = replaceMETI(METI_2_3, Condition = 'brownKnow', Reverse = TRUE),
-       METI_2_5 = replaceMETI(METI_2_5, Condition = 'brownKnow', Reverse = TRUE),
-       METI_2_8 = replaceMETI(METI_2_8, Condition = 'brownKnow', Reverse = TRUE)) %>% 
+       METI_1_1 = replaceMETI(METI_1_1, Condition = 'brownKnow', goodChar = FALSE),
+       METI_1_3 = replaceMETI(METI_1_3, Condition = 'brownKnow', goodChar = FALSE),
+       METI_1_5 = replaceMETI(METI_1_5, Condition = 'brownKnow', goodChar = FALSE),
+       METI_1_6 = replaceMETI(METI_1_6, Condition = 'brownKnow', goodChar = FALSE),
+       METI_2_3 = replaceMETI(METI_2_3, Condition = 'brownKnow', goodChar = FALSE),
+       METI_2_5 = replaceMETI(METI_2_5, Condition = 'brownKnow', goodChar = FALSE),
+       METI_2_8 = replaceMETI(METI_2_8, Condition = 'brownKnow', goodChar = FALSE)) %>% 
   mutate(faceDecision = if_else(faceDecisionBlue == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice')) %>% 
-  mutate(DV = if_else(DV == 'Analyst Brown', 'prefereKnow', 'prefereDK'))
+  mutate(DV = if_else(DV == 'Analyst Brown', 'prefereKnow', 'prefereDK')) %>% 
+  mutate(whoErrors = if_else(whoErrors == 'Analyst Brown', 'knowError',
+                             if_else(whoErrors == 'Analyst Blue', 'DKError', whoErrors)))
 
 
 
@@ -93,29 +95,33 @@ blueKnow <- Data %>%
 
 
 blueKnow <- blueKnow %>% 
-mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'blueKnow', Reverse = TRUE),
-       METI_1_4 = replaceMETI(METI_1_4, Condition = 'blueKnow', Reverse = TRUE),
-       METI_1_7 = replaceMETI(METI_1_7, Condition = 'blueKnow', Reverse = TRUE),
-       METI_1_8 = replaceMETI(METI_1_8, Condition = 'blueKnow', Reverse = TRUE),
-       METI_2_1 = replaceMETI(METI_2_1, Condition = 'blueKnow', Reverse = TRUE),
-       METI_2_2 = replaceMETI(METI_2_2, Condition = 'blueKnow', Reverse = TRUE),
-       METI_2_4 = replaceMETI(METI_2_4, Condition = 'blueKnow', Reverse = TRUE),
-       METI_2_6 = replaceMETI(METI_2_6, Condition = 'blueKnow', Reverse = TRUE),
-       METI_2_7 = replaceMETI(METI_2_7, Condition = 'blueKnow', Reverse = TRUE),
+mutate(METI_1_2 = replaceMETI(METI_1_2, Condition = 'blueKnow', goodChar = TRUE),
+       METI_1_4 = replaceMETI(METI_1_4, Condition = 'blueKnow', goodChar = TRUE),
+       METI_1_7 = replaceMETI(METI_1_7, Condition = 'blueKnow', goodChar = TRUE),
+       METI_1_8 = replaceMETI(METI_1_8, Condition = 'blueKnow', goodChar = TRUE),
+       METI_2_1 = replaceMETI(METI_2_1, Condition = 'blueKnow', goodChar = TRUE),
+       METI_2_2 = replaceMETI(METI_2_2, Condition = 'blueKnow', goodChar = TRUE),
+       METI_2_4 = replaceMETI(METI_2_4, Condition = 'blueKnow', goodChar = TRUE),
+       METI_2_6 = replaceMETI(METI_2_6, Condition = 'blueKnow', goodChar = TRUE),
+       METI_2_7 = replaceMETI(METI_2_7, Condition = 'blueKnow', goodChar = TRUE),
        
        
-       METI_1_1 = replaceMETI(METI_1_1, Condition = 'blueKnow', Reverse = FALSE),
-       METI_1_3 = replaceMETI(METI_1_3, Condition = 'blueKnow', Reverse = FALSE),
-       METI_1_5 = replaceMETI(METI_1_5, Condition = 'blueKnow', Reverse = FALSE),
-       METI_1_6 = replaceMETI(METI_1_6, Condition = 'blueKnow', Reverse = FALSE),
-       METI_2_3 = replaceMETI(METI_2_3, Condition = 'blueKnow', Reverse = FALSE),
-       METI_2_5 = replaceMETI(METI_2_5, Condition = 'blueKnow', Reverse = FALSE),
-       METI_2_8 = replaceMETI(METI_2_8, Condition = 'blueKnow', Reverse = FALSE)) %>% 
+       METI_1_1 = replaceMETI(METI_1_1, Condition = 'blueKnow', goodChar = FALSE),
+       METI_1_3 = replaceMETI(METI_1_3, Condition = 'blueKnow', goodChar = FALSE),
+       METI_1_5 = replaceMETI(METI_1_5, Condition = 'blueKnow', goodChar = FALSE),
+       METI_1_6 = replaceMETI(METI_1_6, Condition = 'blueKnow', goodChar = FALSE),
+       METI_2_3 = replaceMETI(METI_2_3, Condition = 'blueKnow', goodChar = FALSE),
+       METI_2_5 = replaceMETI(METI_2_5, Condition = 'blueKnow', goodChar = FALSE),
+       METI_2_8 = replaceMETI(METI_2_8, Condition = 'blueKnow', goodChar = FALSE)) %>% 
   mutate(faceDecision = if_else(faceDecisionBrown == 'IM_b1V9prTO1mcx6PX', 'Nice', 'notNice')) %>% 
-  mutate(DV = if_else(DV == 'Analyst Blue', 'prefereKnow', 'prefereDK'))
+  mutate(DV = if_else(DV == 'Analyst Blue', 'prefereKnow', 'prefereDK')) %>% 
+  mutate(whoErrors = if_else(whoErrors == 'Analyst Blue', 'knowError',
+                             if_else(whoErrors == 'Analyst Brown', 'DKError', whoErrors)))
 
 
-Data <- rbind(brownKnow, blueKnow)
+Data <- rbind(brownKnow, blueKnow) %>% 
+  mutate(METI = rowMeans(cbind(METI_1_1, METI_1_2, METI_1_3, METI_1_4, METI_1_5, METI_1_6, METI_1_7, METI_1_8, METI_2_1, METI_2_2, METI_2_3, METI_2_4, METI_2_5, METI_2_6, METI_2_7, METI_2_8)))
+
 ```
 
 
@@ -155,7 +161,8 @@ Data <- Data %>%
          IH_3 = intelectualUmility(IH_3),
          IH_4 = intelectualUmility(IH_4),
          IH_5 = intelectualUmility(IH_5, Reverse = TRUE),
-         IH_6 = intelectualUmility(IH_6, Reverse = TRUE))
+         IH_6 = intelectualUmility(IH_6, Reverse = TRUE)) %>% 
+  mutate(IH = rowMeans(cbind(IH_1, IH_2, IH_3, IH_4, IH_5, IH_6)))
 
 ```
 
