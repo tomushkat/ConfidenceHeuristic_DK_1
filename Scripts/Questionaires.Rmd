@@ -16,23 +16,27 @@ Data <- read_csv(here('Data\\dataForAnalysis.csv'))
 ```
 
 # METI
-## alpha
+## Reliability
 ```{r, warning=FALSE, message=FALSE}
 Data %>% 
   select(METI_1_1, METI_1_2, METI_1_3, METI_1_4, METI_1_5, METI_1_6, METI_1_7, METI_1_8, METI_2_1, METI_2_2, METI_2_3, METI_2_4, METI_2_5, METI_2_6, METI_2_7, METI_2_8) %>% 
   alpha()
 ```
 
-## Descriptive statistics + t.test + effect size + histogram
+## METI Total: Descriptive statistics + t.test + effect size + histogram
 ### Questions direction is positive to Dont know advisor
 ### In Red the mean and median, in blue standard deviation
 ```{r, warning=FALSE, message=FALSE}
+
+
 descriptiveStats <- 
 Data %>% 
-  summarise(M = mean(METI),
-            SD = sd(METI),
-            Med = median(METI),
+  summarise(Mean = round(mean(METI), 2),
+            SD = round(sd(METI), 2),
+            Med = round(median(METI), 2),
             N =  nrow(Data))
+
+descriptiveStats
 
 Model <- 
 Data %>% 
@@ -46,16 +50,18 @@ effectsize(Model)
 Data %>% 
   ggplot(aes(x = METI)) + 
   geom_histogram() + 
-  geom_vline(xintercept = descriptiveStats$M, linetype="dotted", 
+  geom_vline(xintercept = descriptiveStats$Mean, linetype="dotted", 
                 color = "red", size=1.5) + 
   geom_vline(xintercept = descriptiveStats$Med, linetype="dashed", 
                 color = "red", size=1.5) +
-  geom_vline(xintercept = c(descriptiveStats$M + descriptiveStats$SD), linetype="dotted", 
+  geom_vline(xintercept = c(descriptiveStats$Mean + descriptiveStats$SD), linetype="dotted", 
                 color = "blue", size=1.5) + 
-  geom_vline(xintercept = c(descriptiveStats$M - descriptiveStats$SD), linetype="dotted", 
+  geom_vline(xintercept = c(descriptiveStats$Mean - descriptiveStats$SD), linetype="dotted", 
                 color = "blue", size=1.5) + 
   theme_bw()
 
+indttest(Data$METI, Data$DV)
+wilcox.test(METI ~ DV, data = Data, correct = FALSE)
 ```
 
 ## METI per question
@@ -67,7 +73,7 @@ for (i in c('METI_1_1', 'METI_1_2', 'METI_1_3', 'METI_1_4', 'METI_1_5', 'METI_1_
   
   test <- t.test(x = Data[, i], mu = 4)
   d <- effectsize(test)
-  if(test$p.value < (0.05 / 16) & d$d > 0.03){
+  if(test$p.value < (0.05 / 16) & d$d > 0.3){
 
     
     Mean <- round(mean(Data[, i] %>% unlist()), 1)
@@ -77,13 +83,10 @@ for (i in c('METI_1_1', 'METI_1_2', 'METI_1_3', 'METI_1_4', 'METI_1_5', 'METI_1_
   }
 }
 
-
-
-
 ```
 
 # Intellectual Humility
-## alpha
+## Reliability
 ```{r, warning=FALSE, message=FALSE}
 Data %>% 
   select(IH_1, IH_2, IH_3, IH_4, IH_5, IH_6) %>% 
@@ -93,14 +96,11 @@ Data %>%
 ## Intellectual Humility ~ Avisor preferece: Descriptive statistics + Mann Whintey test
 ```{r, warning=FALSE, message=FALSE}
 
-Data %>% 
-  group_by(DV) %>% 
-  summarise(Mean = round(mean(IH), 2),
-            SD = round(sd(IH), 2),
-            Median = round(median(IH), 2),
-            N = length(IH))
-
+indttest(Data$IH, Data$DV)
 wilcox.test(IH ~ DV, data = Data, correct = FALSE)
+
+
+
 ```
 
 
